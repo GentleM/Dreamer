@@ -37,6 +37,34 @@
   </entry>
   
   <entry>
+    <title>一个web的http请求历程</title>
+    <link href="https://gentlem.github.io/2020/10/23/%E4%B8%80%E4%B8%AAweb%E7%9A%84http%E8%AF%B7%E6%B1%82%E5%8E%86%E7%A8%8B/"/>
+    <id>https://gentlem.github.io/2020/10/23/%E4%B8%80%E4%B8%AAweb%E7%9A%84http%E8%AF%B7%E6%B1%82%E5%8E%86%E7%A8%8B/</id>
+    <published>2020-10-23T13:20:00.000Z</published>
+    <updated>2021-01-11T15:40:09.085Z</updated>
+    
+    <content type="html"><![CDATA[<ul><li><img src="http%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5%E5%9B%BE.png"></li></ul><ol><li><p>客户端请求url</p></li><li><p>操作系统调用socket库去本地DNS缓存获取域名IP，没有的话从DNS服务器获取IP</p></li><li><p>服务器创建套接字，等待客户端创建套接字连接</p></li><li><p>中途通过光纤（光信号）或者网线（电信号）传输二进制信息</p></li><li><p>服务端网卡缓存接收包并解析成数据</p></li><li><p>应用服务器处理，返回信息</p></li></ol>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;ul&gt;
+&lt;li&gt;&lt;img src=&quot;http%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5%E5%9B%BE.png&quot;&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;客户端请求url&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;操作系统调用socket库去本地</summary>
+      
+    
+    
+    
+    
+    <category term="-- http" scheme="https://gentlem.github.io/tags/http/"/>
+    
+  </entry>
+  
+  <entry>
     <title>jvm学习笔记</title>
     <link href="https://gentlem.github.io/2020/09/16/jvm%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"/>
     <id>https://gentlem.github.io/2020/09/16/jvm%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</id>
