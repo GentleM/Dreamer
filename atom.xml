@@ -37,6 +37,29 @@
   </entry>
   
   <entry>
+    <title>TCP协议三次握手、四次挥手</title>
+    <link href="https://gentlem.github.io/2020/11/01/TCP%E5%8D%8F%E8%AE%AE%E7%9F%A5%E8%AF%86%E7%82%B9/"/>
+    <id>https://gentlem.github.io/2020/11/01/TCP%E5%8D%8F%E8%AE%AE%E7%9F%A5%E8%AF%86%E7%82%B9/</id>
+    <published>2020-11-01T13:23:18.000Z</published>
+    <updated>2021-01-16T16:45:56.411Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="TCP-的特性"><a href="#TCP-的特性" class="headerlink" title="TCP 的特性"></a>TCP 的特性</h2><ul><li>TCP 提供一种<strong>面向连接的、可靠的</strong>字节流服务</li><li>在一个 TCP 连接中，仅有两方进行彼此通信。广播和多播不能用于 TCP</li><li>TCP 使用校验和，确认和重传机制来保证可靠传输</li><li>TCP 给数据分节进行排序，并使用累积确认保证数据的顺序不变和非重复</li><li>TCP 使用滑动窗口机制来实现流量控制，通过动态改变窗口的大小进行拥塞控制</li></ul><p><strong>注意</strong>：TCP 并不能保证数据一定会被对方接收到，因为这是不可能的。TCP 能够做到的是，如果有可能，就把数据递送到接收方，否则就（通过放弃重传并且中断连接这一手段）通知用户。因此准确说 TCP 也不是 100% 可靠的协议，它所能提供的是数据的可靠递送或故障的可靠通知。</p><h2 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h2><p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcwNjA1MTEwNDA1NjY2?x-oss-process=image/format,png"></p><p>三次握手的目的是连接服务器指定端口，建立 TCP 连接，并同步连接双方的序列号和确认号，交换 TCP 窗口大小信息。在 socket 编程中，客户端执行 <code>connect()</code> 时。将触发三次握手。</p><ul><li><p>第一次握手(SYN=1, seq=x):</p><p>客户端发送一个 TCP 的 SYN 标志位置1的包，指明客户端打算连接的服务器的端口，以及初始序号 X,保存在包头的序列号(Sequence Number)字段里。</p><p>发送完毕后，客户端进入 <strong><code>SYN_SEND</code></strong> 状态。</p></li><li><p>第二次握手(SYN=1, ACK=1, seq=y, ACKnum=x+1):</p><p>服务器发回确认包(ACK)应答。即 SYN 标志位和 ACK 标志位均为1。服务器端选择自己 ISN 序列号，放到 Seq 域里，同时将确认序号(Acknowledgement Number)设置为客户的 ISN 加1，即X+1。 发送完毕后，服务器端进入 <strong><code>SYN_RCVD</code></strong> 状态。</p></li><li><p>第三次握手(ACK=1，ACKnum=y+1)</p><p>客户端再次发送确认包(ACK)，SYN 标志位为0，ACK 标志位为1，并且把服务器发来 ACK 的序号字段+1，放在确定字段中发送给对方，并且在数据段放写ISN的+1</p><p>发送完毕后，客户端进入 <strong><code>ESTABLISHED</code></strong> 状态，当服务器端接收到这个包时，也进入 <strong><code>ESTABLISHED</code></strong> 状态，TCP 握手结束。</p></li></ul><h2 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h2><p><img src="https://user-gold-cdn.xitu.io/2020/2/22/1706c89b93024c48?imageView2/0/w/1280/h/960/format/webp/ignore-error/1"></p><p>TCP 的连接的拆除需要发送四个包，因此称为四次挥手(Four-way handshake)。客户端或服务器均可主动发起挥手动作，在 socket 编程中，任何一方执行 <code>close()</code> 操作即可产生挥手操作。</p><ul><li><p>第一次挥手(FIN=1，seq=x)</p><p>假设客户端想要关闭连接，客户端发送一个 FIN 标志位置为1的包，表示自己已经没有数据可以发送了，但是仍然可以接受数据。</p><p>发送完毕后，客户端进入 <code>FIN_WAIT_1</code> 状态。</p></li><li><p>第二次挥手(ACK=1，ACKnum=x+1)</p><p>服务器端确认客户端的 FIN 包，发送一个确认包，表明自己接受到了客户端关闭连接的请求，但还没有准备好关闭连接。</p><p>发送完毕后，服务器端进入 <code>CLOSE_WAIT</code> 状态，客户端接收到这个确认包之后，进入 <code>FIN_WAIT_2</code> 状态，等待服务器端关闭连接。</p></li><li><p>第三次挥手(FIN=1，seq=y)</p><p>服务器端准备好关闭连接时，向客户端发送结束连接请求，FIN 置为1。</p><p>发送完毕后，服务器端进入 <code>LAST_ACK</code> 状态，等待来自客户端的最后一个ACK。</p></li><li><p>第四次挥手(ACK=1，ACKnum=y+1)</p><p>客户端接收到来自服务器端的关闭请求，发送一个确认包，并进入 <code>TIME_WAIT</code>状态，等待可能出现的要求重传的 ACK 包。</p><p>服务器端接收到这个确认包之后，关闭连接，进入 <code>CLOSED</code> 状态。</p><p>客户端等待了某个固定时间（两个最大段生命周期，2MSL，2 Maximum Segment Lifetime）之后，没有收到服务器端的 ACK ，认为服务器端已经正常关闭连接，于是自己也关闭连接，进入 <code>CLOSED</code> 状态。</p></li></ul><h3 id="SYN攻击"><a href="#SYN攻击" class="headerlink" title="SYN攻击"></a>SYN攻击</h3><p><strong>服务器端的资源分配是在二次握手时分配的，而客户端的资源是在完成三次握手时分配的</strong>，所以服务器容易受到SYN攻击。SYN攻击就是Client在短时间内伪造大量不存在的IP地址，并向Server不断地发送SYN包，Server则回复确认包，并等待Client确认，由于源地址不存在，因此Server需要不断重发直至超时，这些伪造的SYN包将长时间占用未连接队列，导致正常的SYN请求因为队列满而被丢弃，从而引起网络拥塞甚至系统瘫痪。SYN 攻击是一种典型的 DoS/DDoS 攻击。</p><p>检测 SYN 攻击非常的方便，当你在服务器上看到大量的半连接状态时，特别是源IP地址是随机的，基本上可以断定这是一次SYN攻击。在 Linux/Unix 上可以使用系统自带的 netstats 命令来检测 SYN 攻击。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -n -p TCP | grep SYN_RECV</span><br></pre></td></tr></table></figure><p>常见的防御 SYN 攻击的方法有如下几种：</p><ul><li>缩短超时（SYN Timeout）时间</li><li>增加最大半连接数</li><li>过滤网关防护</li><li>SYN cookies技术</li></ul><h3 id="四次挥手释放连接时，等待2MSL的意义"><a href="#四次挥手释放连接时，等待2MSL的意义" class="headerlink" title="四次挥手释放连接时，等待2MSL的意义?"></a>四次挥手释放连接时，等待2MSL的意义?</h3><blockquote><p><strong>MSL</strong>是Maximum Segment Lifetime的英文缩写，可译为“最长报文段寿命”，它是任何报文在网络上存在的最长时间，超过这个时间报文将被丢弃。</p></blockquote><ul><li><p><strong>第一：保证TCP协议的全双工连接能够可靠关闭：</strong></p><p>果客户端直接closed的话，假如客户端返回的 ACK 号丢失了，客户端套接字已经删除，这时候服务器重新发送FIN 。这时， 如果别的应用程序要创建套接字， 新套接字碰巧又被分配了同一个端口号 B， 而服务器重发FIN 正好到达 ，本来这个 FIN 是要发给刚刚删除的那个套接字的，但新套接字具有相同的端口号，于是这个 FIN 就会错误地跑到新套接字里面， 新套接字就开始执行断开操作了。  之所以不马上删除套接字， 就是为了防止这样的误操作。 </p></li><li><p><strong>第二：保证这次连接的重复数据段从网络中消失</strong></p><p>如果Client端发送最后的ACK直接进入<code>CLOSED</code>状态，然后又再向Server端发起一个新连接，这时不能保证新连接的与刚关闭的连接的端口号是不同的，也就是新连接和老连接的端口号可能一样了，那么就可能出现问题：如果前一次的连接某些数据滞留在网络中，这些延迟数据在建立新连接后到达Client端，由于新老连接的端口号和IP都一样，TCP协议就认为延迟数据是属于新连接的，新连接就会接收到脏数据，这样就会导致数据包混乱。</p></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h2 id=&quot;TCP-的特性&quot;&gt;&lt;a href=&quot;#TCP-的特性&quot; class=&quot;headerlink&quot; title=&quot;TCP 的特性&quot;&gt;&lt;/a&gt;TCP 的特性&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;TCP 提供一种&lt;strong&gt;面向连接的、可靠的&lt;/strong&gt;字节流服务&lt;/li&gt;</summary>
+      
+    
+    
+    
+    
+    <category term="-- http" scheme="https://gentlem.github.io/tags/http/"/>
+    
+  </entry>
+  
+  <entry>
     <title>一个web的http请求历程</title>
     <link href="https://gentlem.github.io/2020/10/23/%E4%B8%80%E4%B8%AAweb%E7%9A%84http%E8%AF%B7%E6%B1%82%E5%8E%86%E7%A8%8B/"/>
     <id>https://gentlem.github.io/2020/10/23/%E4%B8%80%E4%B8%AAweb%E7%9A%84http%E8%AF%B7%E6%B1%82%E5%8E%86%E7%A8%8B/</id>
